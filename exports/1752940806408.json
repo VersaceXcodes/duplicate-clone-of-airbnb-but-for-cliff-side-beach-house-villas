@@ -1,0 +1,15 @@
+{
+  "timestamp": 1752940806408,
+  "operation": {
+    "id": "backend:server:main"
+  },
+  "projectId": "duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas",
+  "files": [
+    {
+      "path": "../../apps/duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas/backend/server.ts",
+      "type": "text",
+      "size": 19511,
+      "dependencies": false
+    }
+  ]
+}

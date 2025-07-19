@@ -1,0 +1,19 @@
+{
+  "timestamp": 1752941257187,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_NotificationToaster",
+      "version": "latest"
+    }
+  },
+  "projectId": "duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas",
+  "files": [
+    {
+      "path": "../../apps/duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas/vitereact/src/components/views/GV_NotificationToaster.tsx",
+      "type": "text",
+      "size": 15868,
+      "dependencies": false
+    }
+  ]
+}

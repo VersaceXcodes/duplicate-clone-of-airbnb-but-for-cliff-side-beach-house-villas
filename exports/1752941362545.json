@@ -1,0 +1,19 @@
+{
+  "timestamp": 1752941362545,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_AdminDashboard",
+      "version": "1752941191508"
+    }
+  },
+  "projectId": "duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas",
+  "files": [
+    {
+      "path": "../../apps/duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas/vitereact/src/components/views/UV_AdminDashboard.tsx",
+      "type": "text",
+      "size": 32693,
+      "dependencies": false
+    }
+  ]
+}

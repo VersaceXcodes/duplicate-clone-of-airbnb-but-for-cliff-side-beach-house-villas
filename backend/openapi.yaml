@@ -1,0 +1,3053 @@
+openapi: 3.0.0
+info:
+  title: CliffBnb Public User API
+  description: >
+    User-facing (guest, host, admin) API contract for CliffBnb.  
+
+    All entity types, fields, and parameter naming strictly match Zod schemas
+    and UX datamap specs.  
+
+    All IDs are strings. All field names use snake_case. All endpoints reference
+    exact Zod schema fields.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    LocationParam:
+      name: location
+      in: query
+      description: Filter by location (city, region, country string).
+      schema:
+        type: string
+    AmenitiesParam:
+      name: amenities
+      in: query
+      description: Comma-separated list of amenity slugs.
+      schema:
+        type: string
+    StartDateParam:
+      name: start_date
+      in: query
+      description: Start of booking date range (YYYY-MM-DD).
+      schema:
+        type: string
+        format: date
+    EndDateParam:
+      name: end_date
+      in: query
+      description: End of booking date range (YYYY-MM-DD).
+      schema:
+        type: string
+        format: date
+    AdultsParam:
+      name: adults
+      in: query
+      description: Number of adults.
+      schema:
+        type: integer
+    ChildrenParam:
+      name: children
+      in: query
+      description: Number of children.
+      schema:
+        type: integer
+    InfantsParam:
+      name: infants
+      in: query
+      description: Number of infants.
+      schema:
+        type: integer
+    PriceMinParam:
+      name: price_min
+      in: query
+      description: Minimum price per night.
+      schema:
+        type: integer
+    PriceMaxParam:
+      name: price_max
+      in: query
+      description: Maximum price per night.
+      schema:
+        type: integer
+    SortByParam:
+      name: sort_by
+      in: query
+      description: Sort field (created_at, price_per_night, average_rating, review_count).
+      schema:
+        type: string
+        enum:
+          - created_at
+          - price_per_night
+          - average_rating
+          - review_count
+    SortOrderParam:
+      name: sort_order
+      in: query
+      description: Sort order asc/desc.
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+    PageParam:
+      name: page
+      in: query
+      description: Page number (1-based).
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    OffsetParam:
+      name: offset
+      in: query
+      description: Offset for pagination.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    LimitParam10:
+      name: limit
+      in: query
+      description: Result page size.
+      schema:
+        type: integer
+        default: 10
+    LimitParam20:
+      name: limit
+      in: query
+      description: Result page size.
+      schema:
+        type: integer
+        default: 20
+    LimitParam50:
+      name: limit
+      in: query
+      description: Result page size.
+      schema:
+        type: integer
+        default: 50
+    ViewModeParam:
+      name: view_mode
+      in: query
+      description: Search view type (list or map).
+      schema:
+        type: string
+        enum:
+          - list
+          - map
+    NeLatParam:
+      name: ne_lat
+      in: query
+      description: Map northeast latitude bound.
+      schema:
+        type: number
+    NeLngParam:
+      name: ne_lng
+      in: query
+      description: Map northeast longitude bound.
+      schema:
+        type: number
+    SwLatParam:
+      name: sw_lat
+      in: query
+      description: Map southwest latitude bound.
+      schema:
+        type: number
+    SwLngParam:
+      name: sw_lng
+      in: query
+      description: Map southwest longitude bound.
+      schema:
+        type: number
+  schemas:
+    User:
+      type: object
+      required:
+        - user_id
+        - email
+        - name
+        - password_hash
+        - role
+        - is_email_confirmed
+        - has_unread_messages
+        - has_unread_notifications
+        - created_at
+        - updated_at
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        password_hash:
+          type: string
+        role:
+          type: string
+        profile_photo_url:
+          type: string
+          nullable: true
+        contact_info:
+          type: string
+          nullable: true
+        host_bio:
+          type: string
+          nullable: true
+        is_email_confirmed:
+          type: boolean
+        email_confirmation_token:
+          type: string
+          nullable: true
+        password_reset_token:
+          type: string
+          nullable: true
+        has_unread_messages:
+          type: boolean
+        has_unread_notifications:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateUserInput:
+      type: object
+      required:
+        - email
+        - name
+        - password_hash
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        password_hash:
+          type: string
+        role:
+          type: string
+        profile_photo_url:
+          type: string
+          nullable: true
+        contact_info:
+          type: string
+          nullable: true
+        host_bio:
+          type: string
+          nullable: true
+    UpdateUserInput:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        password_hash:
+          type: string
+        role:
+          type: string
+        profile_photo_url:
+          type: string
+          nullable: true
+        contact_info:
+          type: string
+          nullable: true
+        host_bio:
+          type: string
+          nullable: true
+        is_email_confirmed:
+          type: boolean
+        email_confirmation_token:
+          type: string
+          nullable: true
+        password_reset_token:
+          type: string
+          nullable: true
+        has_unread_messages:
+          type: boolean
+        has_unread_notifications:
+          type: boolean
+    UserList:
+      type: array
+      items:
+        $ref: "#/components/schemas/User"
+    AuthToken:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+    AuthRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    EmailRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordInput:
+      type: object
+      required:
+        - token
+        - password
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          minLength: 8
+    Villa:
+      type: object
+      required:
+        - villa_id
+        - host_user_id
+        - name
+        - location
+        - lat
+        - lng
+        - description
+        - amenities
+        - price_per_night
+        - cleaning_fee
+        - service_fee
+        - minimum_stay_nights
+        - cancellation_policy
+        - status
+        - occupancy
+        - average_rating
+        - review_count
+        - created_at
+        - updated_at
+      properties:
+        villa_id:
+          type: string
+        host_user_id:
+          type: string
+        name:
+          type: string
+        subtitle:
+          type: string
+          nullable: true
+        location:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        address:
+          type: string
+          nullable: true
+        description:
+          type: string
+        house_rules:
+          type: string
+          nullable: true
+        special_notes:
+          type: string
+          nullable: true
+        amenities:
+          type: string
+        price_per_night:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        minimum_stay_nights:
+          type: integer
+        cancellation_policy:
+          type: string
+        status:
+          type: string
+        occupancy:
+          type: integer
+        average_rating:
+          type: number
+        review_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateVillaInput:
+      type: object
+      required:
+        - host_user_id
+        - name
+        - location
+        - lat
+        - lng
+        - description
+        - amenities
+        - price_per_night
+        - cancellation_policy
+      properties:
+        host_user_id:
+          type: string
+        name:
+          type: string
+        subtitle:
+          type: string
+          nullable: true
+        location:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        address:
+          type: string
+          nullable: true
+        description:
+          type: string
+        house_rules:
+          type: string
+          nullable: true
+        special_notes:
+          type: string
+          nullable: true
+        amenities:
+          type: string
+        price_per_night:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        minimum_stay_nights:
+          type: integer
+        cancellation_policy:
+          type: string
+        status:
+          type: string
+        occupancy:
+          type: integer
+    UpdateVillaInput:
+      type: object
+      required:
+        - villa_id
+      properties:
+        villa_id:
+          type: string
+        host_user_id:
+          type: string
+        name:
+          type: string
+        subtitle:
+          type: string
+          nullable: true
+        location:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        address:
+          type: string
+          nullable: true
+        description:
+          type: string
+        house_rules:
+          type: string
+          nullable: true
+        special_notes:
+          type: string
+          nullable: true
+        amenities:
+          type: string
+        price_per_night:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        minimum_stay_nights:
+          type: integer
+        cancellation_policy:
+          type: string
+        status:
+          type: string
+        occupancy:
+          type: integer
+        average_rating:
+          type: number
+        review_count:
+          type: integer
+    VillaList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Villa"
+    VillaPhoto:
+      type: object
+      required:
+        - photo_id
+        - villa_id
+        - url
+        - sort_order
+        - created_at
+      properties:
+        photo_id:
+          type: string
+        villa_id:
+          type: string
+        url:
+          type: string
+        sort_order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    CreateVillaPhotoInput:
+      type: object
+      required:
+        - villa_id
+        - url
+        - sort_order
+      properties:
+        villa_id:
+          type: string
+        url:
+          type: string
+        sort_order:
+          type: integer
+    UpdateVillaPhotoInput:
+      type: object
+      required:
+        - photo_id
+      properties:
+        photo_id:
+          type: string
+        villa_id:
+          type: string
+        url:
+          type: string
+        sort_order:
+          type: integer
+    VillaPhotoList:
+      type: array
+      items:
+        $ref: "#/components/schemas/VillaPhoto"
+    VillaAvailability:
+      type: object
+      required:
+        - availability_id
+        - villa_id
+        - date
+        - is_available
+        - is_blocked
+        - created_at
+      properties:
+        availability_id:
+          type: string
+        villa_id:
+          type: string
+        date:
+          type: string
+        is_available:
+          type: boolean
+        is_blocked:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    CreateVillaAvailabilityInput:
+      type: object
+      required:
+        - villa_id
+        - date
+        - is_available
+      properties:
+        villa_id:
+          type: string
+        date:
+          type: string
+        is_available:
+          type: boolean
+        is_blocked:
+          type: boolean
+    UpdateVillaAvailabilityInput:
+      type: object
+      required:
+        - availability_id
+      properties:
+        availability_id:
+          type: string
+        villa_id:
+          type: string
+        date:
+          type: string
+        is_available:
+          type: boolean
+        is_blocked:
+          type: boolean
+    VillaAvailabilityList:
+      type: array
+      items:
+        $ref: "#/components/schemas/VillaAvailability"
+    Amenity:
+      type: object
+      required:
+        - slug
+        - label
+      properties:
+        slug:
+          type: string
+        label:
+          type: string
+        icon_url:
+          type: string
+          nullable: true
+    CreateAmenityInput:
+      type: object
+      required:
+        - slug
+        - label
+      properties:
+        slug:
+          type: string
+        label:
+          type: string
+        icon_url:
+          type: string
+          nullable: true
+    UpdateAmenityInput:
+      type: object
+      required:
+        - slug
+      properties:
+        slug:
+          type: string
+        label:
+          type: string
+        icon_url:
+          type: string
+          nullable: true
+    AmenityList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Amenity"
+    VillaAmenity:
+      type: object
+      required:
+        - villa_id
+        - amenity_slug
+      properties:
+        villa_id:
+          type: string
+        amenity_slug:
+          type: string
+    VillaSaved:
+      type: object
+      required:
+        - user_id
+        - villa_id
+        - saved_at
+      properties:
+        user_id:
+          type: string
+        villa_id:
+          type: string
+        saved_at:
+          type: string
+          format: date-time
+    CreateVillaSavedInput:
+      type: object
+      required:
+        - user_id
+        - villa_id
+      properties:
+        user_id:
+          type: string
+        villa_id:
+          type: string
+    VillaSavedList:
+      type: array
+      items:
+        $ref: "#/components/schemas/VillaSaved"
+    SearchQuery:
+      type: object
+      required:
+        - search_id
+        - created_at
+      properties:
+        search_id:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        start_date:
+          type: string
+          nullable: true
+        end_date:
+          type: string
+          nullable: true
+        adults:
+          type: integer
+          nullable: true
+        children:
+          type: integer
+          nullable: true
+        infants:
+          type: integer
+          nullable: true
+        price_min:
+          type: number
+          nullable: true
+        price_max:
+          type: number
+          nullable: true
+        amenities:
+          type: string
+          nullable: true
+        sort_by:
+          type: string
+          nullable: true
+        map_bounds:
+          type: string
+          nullable: true
+        page:
+          type: integer
+          nullable: true
+        view_mode:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    CreateSearchQueryInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        start_date:
+          type: string
+          nullable: true
+        end_date:
+          type: string
+          nullable: true
+        adults:
+          type: integer
+          nullable: true
+        children:
+          type: integer
+          nullable: true
+        infants:
+          type: integer
+          nullable: true
+        price_min:
+          type: number
+          nullable: true
+        price_max:
+          type: number
+          nullable: true
+        amenities:
+          type: string
+          nullable: true
+        sort_by:
+          type: string
+          nullable: true
+        map_bounds:
+          type: string
+          nullable: true
+        page:
+          type: integer
+          nullable: true
+        view_mode:
+          type: string
+          nullable: true
+    SearchQueryList:
+      type: array
+      items:
+        $ref: "#/components/schemas/SearchQuery"
+    Booking:
+      type: object
+      required:
+        - booking_id
+        - villa_id
+        - guest_user_id
+        - host_user_id
+        - start_date
+        - end_date
+        - adults
+        - children
+        - infants
+        - total_price
+        - cleaning_fee
+        - service_fee
+        - status
+        - payment_status
+        - is_guest_id_provided
+        - created_at
+        - updated_at
+      properties:
+        booking_id:
+          type: string
+        villa_id:
+          type: string
+        guest_user_id:
+          type: string
+        host_user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        adults:
+          type: integer
+        children:
+          type: integer
+        infants:
+          type: integer
+        total_price:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        status:
+          type: string
+        cancellation_reason:
+          type: string
+          nullable: true
+        payment_status:
+          type: string
+        is_guest_id_provided:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateBookingInput:
+      type: object
+      required:
+        - villa_id
+        - guest_user_id
+        - host_user_id
+        - start_date
+        - end_date
+        - adults
+        - total_price
+        - cleaning_fee
+        - service_fee
+      properties:
+        villa_id:
+          type: string
+        guest_user_id:
+          type: string
+        host_user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        adults:
+          type: integer
+        children:
+          type: integer
+        infants:
+          type: integer
+        total_price:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        status:
+          type: string
+        payment_status:
+          type: string
+        is_guest_id_provided:
+          type: boolean
+        cancellation_reason:
+          type: string
+          nullable: true
+    UpdateBookingInput:
+      type: object
+      required:
+        - booking_id
+      properties:
+        booking_id:
+          type: string
+        villa_id:
+          type: string
+        guest_user_id:
+          type: string
+        host_user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        adults:
+          type: integer
+        children:
+          type: integer
+        infants:
+          type: integer
+        total_price:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        status:
+          type: string
+        cancellation_reason:
+          type: string
+          nullable: true
+        payment_status:
+          type: string
+        is_guest_id_provided:
+          type: boolean
+    BookingList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Booking"
+    Review:
+      type: object
+      required:
+        - review_id
+        - booking_id
+        - villa_id
+        - reviewer_user_id
+        - reviewee_user_id
+        - reviewer_role
+        - rating
+        - is_deleted
+        - created_at
+        - updated_at
+      properties:
+        review_id:
+          type: string
+        booking_id:
+          type: string
+        villa_id:
+          type: string
+        reviewer_user_id:
+          type: string
+        reviewee_user_id:
+          type: string
+        reviewer_role:
+          type: string
+        rating:
+          type: number
+        text:
+          type: string
+          nullable: true
+        is_deleted:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        can_edit_until:
+          type: string
+          nullable: true
+    CreateReviewInput:
+      type: object
+      required:
+        - booking_id
+        - villa_id
+        - reviewer_user_id
+        - reviewee_user_id
+        - reviewer_role
+        - rating
+      properties:
+        booking_id:
+          type: string
+        villa_id:
+          type: string
+        reviewer_user_id:
+          type: string
+        reviewee_user_id:
+          type: string
+        reviewer_role:
+          type: string
+        rating:
+          type: number
+        text:
+          type: string
+          nullable: true
+    UpdateReviewInput:
+      type: object
+      required:
+        - review_id
+      properties:
+        review_id:
+          type: string
+        rating:
+          type: number
+        text:
+          type: string
+          nullable: true
+        is_deleted:
+          type: boolean
+        can_edit_until:
+          type: string
+          nullable: true
+    ReviewList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Review"
+    MessageThread:
+      type: object
+      required:
+        - thread_id
+        - participant_user_ids
+        - created_at
+        - updated_at
+      properties:
+        thread_id:
+          type: string
+        villa_id:
+          type: string
+          nullable: true
+        booking_id:
+          type: string
+          nullable: true
+        participant_user_ids:
+          type: string
+        last_message_at:
+          type: string
+          nullable: true
+        unread_counts:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateMessageThreadInput:
+      type: object
+      properties:
+        villa_id:
+          type: string
+          nullable: true
+        booking_id:
+          type: string
+          nullable: true
+        participant_user_ids:
+          type: string
+    UpdateMessageThreadInput:
+      type: object
+      required:
+        - thread_id
+      properties:
+        thread_id:
+          type: string
+        villa_id:
+          type: string
+          nullable: true
+        booking_id:
+          type: string
+          nullable: true
+        participant_user_ids:
+          type: string
+        last_message_at:
+          type: string
+          nullable: true
+        unread_counts:
+          type: string
+          nullable: true
+    MessageThreadList:
+      type: array
+      items:
+        $ref: "#/components/schemas/MessageThread"
+    Message:
+      type: object
+      required:
+        - message_id
+        - thread_id
+        - sender_user_id
+        - content
+        - sent_at
+        - is_read
+      properties:
+        message_id:
+          type: string
+        thread_id:
+          type: string
+        sender_user_id:
+          type: string
+        content:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        is_read:
+          type: boolean
+    CreateMessageInput:
+      type: object
+      required:
+        - thread_id
+        - sender_user_id
+        - content
+      properties:
+        thread_id:
+          type: string
+        sender_user_id:
+          type: string
+        content:
+          type: string
+    UpdateMessageInput:
+      type: object
+      required:
+        - message_id
+      properties:
+        message_id:
+          type: string
+        content:
+          type: string
+        is_read:
+          type: boolean
+    MessageList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Message"
+    Notification:
+      type: object
+      required:
+        - notification_id
+        - user_id
+        - type
+        - content
+        - is_read
+        - created_at
+      properties:
+        notification_id:
+          type: string
+        user_id:
+          type: string
+        type:
+          type: string
+        content:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    CreateNotificationInput:
+      type: object
+      required:
+        - user_id
+        - type
+        - content
+      properties:
+        user_id:
+          type: string
+        type:
+          type: string
+        content:
+          type: string
+        is_read:
+          type: boolean
+    UpdateNotificationInput:
+      type: object
+      required:
+        - notification_id
+      properties:
+        notification_id:
+          type: string
+        is_read:
+          type: boolean
+    NotificationList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Notification"
+    LegalPage:
+      type: object
+      required:
+        - page
+        - title
+        - content
+        - updated_at
+      properties:
+        page:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    CreateLegalPageInput:
+      type: object
+      required:
+        - page
+        - title
+        - content
+      properties:
+        page:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+    UpdateLegalPageInput:
+      type: object
+      required:
+        - page
+      properties:
+        page:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+    LegalPageList:
+      type: array
+      items:
+        $ref: "#/components/schemas/LegalPage"
+    Payout:
+      type: object
+      required:
+        - payout_id
+        - host_user_id
+        - amount
+        - status
+        - payout_method
+        - created_at
+      properties:
+        payout_id:
+          type: string
+        host_user_id:
+          type: string
+        booking_id:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        status:
+          type: string
+        payout_method:
+          type: string
+        details:
+          type: string
+          nullable: true
+        payout_date:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    CreatePayoutInput:
+      type: object
+      required:
+        - host_user_id
+        - amount
+        - status
+        - payout_method
+      properties:
+        host_user_id:
+          type: string
+        booking_id:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        status:
+          type: string
+        payout_method:
+          type: string
+        details:
+          type: string
+          nullable: true
+        payout_date:
+          type: string
+          nullable: true
+    UpdatePayoutInput:
+      type: object
+      required:
+        - payout_id
+      properties:
+        payout_id:
+          type: string
+        status:
+          type: string
+        payout_method:
+          type: string
+        details:
+          type: string
+        payout_date:
+          type: string
+          nullable: true
+    PayoutList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Payout"
+    PayoutMethod:
+      type: object
+      required:
+        - payout_method_id
+        - host_user_id
+        - method
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        payout_method_id:
+          type: string
+        host_user_id:
+          type: string
+        method:
+          type: string
+        details:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreatePayoutMethodInput:
+      type: object
+      required:
+        - host_user_id
+        - method
+      properties:
+        host_user_id:
+          type: string
+        method:
+          type: string
+        details:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+    UpdatePayoutMethodInput:
+      type: object
+      required:
+        - payout_method_id
+      properties:
+        payout_method_id:
+          type: string
+        method:
+          type: string
+        details:
+          type: string
+        is_active:
+          type: boolean
+    PayoutMethodList:
+      type: array
+      items:
+        $ref: "#/components/schemas/PayoutMethod"
+paths:
+  /auth/signup:
+    post:
+      summary: Register a new user
+      operationId: signupUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserInput"
+      responses:
+        "201":
+          description: User created, confirmation link sent, returns JWT token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+  /auth/login:
+    post:
+      summary: Sign in with email and password
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Returns JWT token and user details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+  /auth/confirm-email:
+    post:
+      summary: Confirm user email by token
+      operationId: confirmEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+      responses:
+        "200":
+          description: Email confirmed successfully, returns JWT token & user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+  /auth/forgot-password:
+    post:
+      summary: Send password reset link to user email
+      operationId: sendPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailRequest"
+      responses:
+        "200":
+          description: Password reset link sent
+  /auth/reset-password:
+    post:
+      summary: Reset user password with token from email
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordInput"
+      responses:
+        "200":
+          description: Password changed, returns new JWT token & user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+  /auth/logout:
+    post:
+      summary: Log out user (client only; optional for backend stateless JWT)
+      operationId: logoutUser
+      responses:
+        "204":
+          description: User logged out
+  /users/{user_id}:
+    get:
+      summary: Get details for a public user profile
+      operationId: getUser
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      summary: Update current user profile (full)
+      operationId: updateUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserInput"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      summary: Patch current user fields
+      operationId: patchUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserInput"
+      responses:
+        "200":
+          description: Patched user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users/me:
+    get:
+      summary: Get the authenticated user's profile & dashboard info
+      operationId: getOwnUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users:
+    get:
+      summary: Search/list of users (admin, moderation)
+      operationId: searchUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: role
+          in: query
+          schema:
+            type: string
+        - name: is_email_confirmed
+          in: query
+          schema:
+            type: boolean
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - name
+              - created_at
+              - email
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+  /villas:
+    get:
+      summary: Search/cliff villa listings with filters (homepage, search, map)
+      operationId: searchVillas
+      parameters:
+        - $ref: "#/components/parameters/LocationParam"
+        - $ref: "#/components/parameters/AmenitiesParam"
+        - $ref: "#/components/parameters/StartDateParam"
+        - $ref: "#/components/parameters/EndDateParam"
+        - $ref: "#/components/parameters/AdultsParam"
+        - $ref: "#/components/parameters/ChildrenParam"
+        - $ref: "#/components/parameters/InfantsParam"
+        - $ref: "#/components/parameters/PriceMinParam"
+        - $ref: "#/components/parameters/PriceMaxParam"
+        - $ref: "#/components/parameters/SortByParam"
+        - $ref: "#/components/parameters/SortOrderParam"
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/ViewModeParam"
+        - $ref: "#/components/parameters/NeLatParam"
+        - $ref: "#/components/parameters/NeLngParam"
+        - $ref: "#/components/parameters/SwLatParam"
+        - $ref: "#/components/parameters/SwLngParam"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: status
+          in: query
+          description: Filter published/unpublished for admin/host
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Villa listing matching filters, pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaList"
+    post:
+      summary: Host creates a new villa
+      operationId: createVilla
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVillaInput"
+      responses:
+        "201":
+          description: Created villa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Villa"
+  /villas/{villa_id}:
+    get:
+      summary: Fetch full villa listing details (for details page, booking, dashboard)
+      operationId: getVilla
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Villa details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Villa"
+    put:
+      summary: Replace full villa listing (host)
+      operationId: updateVilla
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVillaInput"
+      responses:
+        "200":
+          description: Updated villa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Villa"
+    patch:
+      summary: Patch villa listing fields (host)
+      operationId: patchVilla
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVillaInput"
+      responses:
+        "200":
+          description: Patched villa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Villa"
+    delete:
+      summary: Unpublish or permanently remove a villa (host/admin)
+      operationId: deleteVilla
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Villa deleted
+  /villas/{villa_id}/photos:
+    get:
+      summary: Get all photos for a villa (gallery, ordered)
+      operationId: getVillaPhotos
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of photos for villa (gallery)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaPhotoList"
+    post:
+      summary: Add a new photo to a villa (host)
+      operationId: addVillaPhoto
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - villa_id
+                - url
+                - sort_order
+              properties:
+                villa_id:
+                  type: string
+                url:
+                  type: string
+                sort_order:
+                  type: integer
+      responses:
+        "201":
+          description: Photo added to gallery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaPhoto"
+  /villa-photos/{photo_id}:
+    patch:
+      summary: Update photo info (url or sort order)
+      operationId: updateVillaPhoto
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: photo_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVillaPhotoInput"
+      responses:
+        "200":
+          description: Updated photo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaPhoto"
+    delete:
+      summary: Remove/delete villa photo
+      operationId: deleteVillaPhoto
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: photo_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Photo deleted
+  /villas/{villa_id}/availability:
+    get:
+      summary: List all (or filtered) availability calendar entries for villa
+      operationId: getVillaAvailability
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: date_from
+          in: query
+          schema:
+            type: string
+        - name: date_to
+          in: query
+          schema:
+            type: string
+        - name: is_available
+          in: query
+          schema:
+            type: boolean
+        - name: is_blocked
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of availability rows (dates)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaAvailabilityList"
+    post:
+      summary: Host sets or blocks/unblocks date(s) for their villa
+      operationId: createVillaAvailability
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: villa_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVillaAvailabilityInput"
+      responses:
+        "201":
+          description: Calendar entry set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaAvailability"
+  /villa-availability/{availability_id}:
+    patch:
+      summary: Update/patch specific calendar entry
+      operationId: updateVillaAvailability
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: availability_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVillaAvailabilityInput"
+      responses:
+        "200":
+          description: Calendar entry updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaAvailability"
+    delete:
+      summary: Delete entry for given date
+      operationId: deleteVillaAvailability
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: availability_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Entry deleted
+  /amenities:
+    get:
+      summary: List/filter all amenities (for forms, search)
+      operationId: listAmenities
+      parameters:
+        - name: slug
+          in: query
+          schema:
+            type: string
+        - name: label
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of available amenities
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AmenityList"
+  /villa-amenities:
+    get:
+      summary: Get all amenities applied to specific villa(s)
+      operationId: getVillaAmenities
+      parameters:
+        - name: villa_id
+          in: query
+          schema:
+            type: string
+        - name: amenity_slug
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Villa-amenity assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VillaAmenity"
+    post:
+      summary: Add amenity to villa (host)
+      operationId: addVillaAmenity
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - villa_id
+                - amenity_slug
+              properties:
+                villa_id:
+                  type: string
+                amenity_slug:
+                  type: string
+      responses:
+        "201":
+          description: Assignment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaAmenity"
+    delete:
+      summary: Remove an amenity from a villa (host)
+      operationId: deleteVillaAmenity
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: villa_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: amenity_slug
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Amenity assignment removed
+  /villa-saved:
+    get:
+      summary: Get all saved villas for a user (wishlist, dashboard)
+      operationId: getSavedVillas
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: villa_id
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - saved_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of villa_saved rows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaSavedList"
+    post:
+      summary: Save a villa to wishlist
+      operationId: saveVilla
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVillaSavedInput"
+      responses:
+        "201":
+          description: Villa saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VillaSaved"
+    delete:
+      summary: Remove a villa from user's saved list
+      operationId: unsaveVilla
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVillaSavedInput"
+      responses:
+        "204":
+          description: Villa unsaved
+  /bookings:
+    get:
+      summary: Search/list bookings (by user, villa, dashboard, admin)
+      operationId: getBookings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: villa_id
+          in: query
+          schema:
+            type: string
+        - name: guest_user_id
+          in: query
+          schema:
+            type: string
+        - name: host_user_id
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: payment_status
+          in: query
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          schema:
+            type: string
+        - name: end_date
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+              - start_date
+              - end_date
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: Bookings list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingList"
+    post:
+      summary: Create/initiate a booking flow (guest)
+      operationId: createBooking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingInput"
+      responses:
+        "201":
+          description: New booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+  /bookings/{booking_id}:
+    get:
+      summary: Get detailed info for a booking
+      operationId: getBooking
+      parameters:
+        - name: booking_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    put:
+      summary: Update booking (host or guest)
+      operationId: updateBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: booking_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingInput"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    patch:
+      summary: Patch booking info (cancellation, status change, payment etc.)
+      operationId: patchBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: booking_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingInput"
+      responses:
+        "200":
+          description: Patched booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    delete:
+      summary: Cancel/delete a booking (guest, host, admin)
+      operationId: cancelBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: booking_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Booking cancelled/deleted
+  /reviews:
+    get:
+      summary: List or filter reviews (for villa, for booking, user dashboard)
+      operationId: getReviews
+      parameters:
+        - name: villa_id
+          in: query
+          schema:
+            type: string
+        - name: booking_id
+          in: query
+          schema:
+            type: string
+        - name: reviewer_user_id
+          in: query
+          schema:
+            type: string
+        - name: reviewee_user_id
+          in: query
+          schema:
+            type: string
+        - name: rating_min
+          in: query
+          schema:
+            type: number
+        - name: rating_max
+          in: query
+          schema:
+            type: number
+        - name: is_deleted
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+              - rating
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewList"
+    post:
+      summary: Create a review for booking/villa (guest or host)
+      operationId: createReview
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewInput"
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+  /reviews/{review_id}:
+    get:
+      summary: Get a specific review
+      operationId: getReview
+      parameters:
+        - name: review_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Review object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+    patch:
+      summary: Edit or soft-delete a review
+      operationId: updateReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: review_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReviewInput"
+      responses:
+        "200":
+          description: Updated review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+    delete:
+      summary: Hard delete/flag a review (admin/mod)
+      operationId: deleteReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: review_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Review deleted
+  /message-threads:
+    get:
+      summary: Get all messaging threads for current user (dashboard, inbox)
+      operationId: getMessageThreads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: participant_user_id
+          in: query
+          schema:
+            type: string
+        - name: villa_id
+          in: query
+          schema:
+            type: string
+        - name: booking_id
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - updated_at
+              - created_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of threads
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageThreadList"
+    post:
+      summary: Start (or find) a new message thread (booking, villa, or user inbox)
+      operationId: createMessageThread
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageThreadInput"
+      responses:
+        "201":
+          description: Created/opened thread
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageThread"
+  /message-threads/{thread_id}:
+    get:
+      summary: Get details for a message thread
+      operationId: getMessageThread
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: thread_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Message thread data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageThread"
+    patch:
+      summary: Update thread (mark as read, etc.)
+      operationId: updateMessageThread
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: thread_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMessageThreadInput"
+      responses:
+        "200":
+          description: thread updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageThread"
+  /messages:
+    get:
+      summary: Get all messages in a thread (or filter by sender, unread etc.)
+      operationId: getMessages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: thread_id
+          in: query
+          schema:
+            type: string
+        - name: sender_user_id
+          in: query
+          schema:
+            type: string
+        - name: is_read
+          in: query
+          schema:
+            type: boolean
+        - name: sent_after
+          in: query
+          schema:
+            type: string
+        - name: sent_before
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - sent_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: Messages in thread
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageList"
+    post:
+      summary: Send a new message in a thread
+      operationId: sendMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageInput"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /messages/{message_id}:
+    patch:
+      summary: Update message status/content (mark as read)
+      operationId: patchMessage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMessageInput"
+      responses:
+        "200":
+          description: Message updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+    delete:
+      summary: Delete a message (rare, typically admin/mod only)
+      operationId: deleteMessage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Message deleted
+  /notifications:
+    get:
+      summary: Get all notifications for current user
+      operationId: getNotifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: is_read
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: Notifications queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationList"
+    post:
+      summary: Create notification (system/admin, triggers email if applicable)
+      operationId: createNotification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNotificationInput"
+      responses:
+        "201":
+          description: Notification created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+  /notifications/{notification_id}:
+    patch:
+      summary: Mark a notification as read/unread
+      operationId: updateNotification
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNotificationInput"
+      responses:
+        "200":
+          description: Notification updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+  /search-queries:
+    post:
+      summary: Log a user's search operation (& enrich for analytics, suggestions)
+      operationId: createSearchQuery
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSearchQueryInput"
+      responses:
+        "201":
+          description: Saved search query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchQuery"
+    get:
+      summary: List/search logged search queries
+      operationId: getSearchQueries
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: User search query logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchQueryList"
+  /payouts:
+    get:
+      summary: List all payouts for a host (earnings dashboard)
+      operationId: getPayouts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: host_user_id
+          in: query
+          schema:
+            type: string
+        - name: booking_id
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: payout_method
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+              - payout_date
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of payouts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutList"
+    post:
+      summary: Create a manual payout (simulate payout for MVP)
+      operationId: createPayout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePayoutInput"
+      responses:
+        "201":
+          description: Payout created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payout"
+  /payouts/{payout_id}:
+    patch:
+      summary: Update payout status or fields (admin/host triggers)
+      operationId: updatePayout
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: payout_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePayoutInput"
+      responses:
+        "200":
+          description: Updated payout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payout"
+  /payout-methods:
+    get:
+      summary: Get all payout methods for host (settings form, dashboard)
+      operationId: getPayoutMethods
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: host_user_id
+          in: query
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Host payout method(s)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutMethodList"
+    post:
+      summary: Host adds a new payout method
+      operationId: createPayoutMethod
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePayoutMethodInput"
+      responses:
+        "201":
+          description: Created payout method
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutMethod"
+  /payout-methods/{payout_method_id}:
+    patch:
+      summary: Patch payout method (host disables, edits details)
+      operationId: updatePayoutMethod
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: payout_method_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePayoutMethodInput"
+      responses:
+        "200":
+          description: Method updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutMethod"
+    delete:
+      summary: Remove payout method (host or admin)
+      operationId: deletePayoutMethod
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: payout_method_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Method deleted
+  /legal-pages:
+    get:
+      summary: List/filter legal informational/static pages (terms, privacy, etc)
+      operationId: getLegalPages
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - updated_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: Legal/FAQ pages rendered in-app
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegalPageList"
+  /legal-pages/{page}:
+    get:
+      summary: Get a single legal/information page (about, terms, privacy, etc)
+      operationId: getLegalPage
+      parameters:
+        - name: page
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Full legal/static page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegalPage"

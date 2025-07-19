@@ -1,0 +1,19 @@
+{
+  "timestamp": 1752941247425,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_ErrorStates",
+      "version": "1752941191627"
+    }
+  },
+  "projectId": "duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas",
+  "files": [
+    {
+      "path": "../../apps/duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas/vitereact/src/components/views/GV_ErrorStates.tsx",
+      "type": "text",
+      "size": 4069,
+      "dependencies": false
+    }
+  ]
+}

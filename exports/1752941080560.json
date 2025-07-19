@@ -1,0 +1,15 @@
+{
+  "timestamp": 1752941080560,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas",
+  "files": [
+    {
+      "path": "../../apps/duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas/vitereact/package.json",
+      "type": "text",
+      "size": 2941,
+      "dependencies": true
+    }
+  ]
+}

@@ -1,2 +1,3 @@
-# duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas
-Project duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas generated.
+app generated from cofounder/boilerplate
+
+instructions here on how to start api and frontend , whether in parallel or separately

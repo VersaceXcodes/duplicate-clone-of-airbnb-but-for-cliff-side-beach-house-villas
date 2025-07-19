@@ -1,0 +1,15 @@
+{
+  "timestamp": 1752940080098,
+  "operation": {
+    "id": "db:postgres"
+  },
+  "projectId": "duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas",
+  "files": [
+    {
+      "path": "../../apps/duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas/backend/db.sql",
+      "type": "text",
+      "size": 15754,
+      "dependencies": false
+    }
+  ]
+}

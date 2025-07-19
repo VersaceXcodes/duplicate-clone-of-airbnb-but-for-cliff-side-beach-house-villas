@@ -1,0 +1,840 @@
+asyncapi: 2.0.0
+info:
+  title: CliffBnb Realtime API
+  version: 1.0.0
+  description: >
+    Realtime events and channels for CliffBnb (Airbnb-style cliff villa rentals
+    platform). This specification only covers realtime (pub/sub, websockets etc)
+    functionality needed for instant UX state sync.
+servers:
+  websocket_dev:
+    url: ws://localhost:3000/ws
+    protocol: ws
+defaultContentType: application/json
+channels:
+  user/{user_id}/state:
+    description: >
+      Per-user channel for realtime updates to their global state, including
+      profile, unread counts, email confirmation, etc.
+    parameters:
+      user_id:
+        description: Target user id
+        schema:
+          type: string
+    subscribe:
+      operationId: user_state_update
+      summary: User state update (profile changes, role switched, authenticated,
+        notification/message flags etc)
+      message:
+        name: user_state_update
+        payload:
+          $ref: "#/components/schemas/UserStateGlobal"
+  user/{user_id}/notifications:
+    description: >
+      Notification push channel for realtime in-app notifications/toasts for the
+      user.
+    parameters:
+      user_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: push_notification
+      summary: Send notification to user (booking status, message, payout, system, etc)
+      message:
+        name: notification
+        payload:
+          $ref: "#/components/schemas/Notification"
+  user/{user_id}/unread_counts:
+    description: >
+      Push to update the frontend's unread notifications/messages count for the
+      user.
+    parameters:
+      user_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: user_unread_counts_update
+      summary: Update user's unread message/notification flags
+      message:
+        name: user_unread_counts
+        payload:
+          type: object
+          properties:
+            has_unread_messages:
+              type: boolean
+            has_unread_notifications:
+              type: boolean
+  villas/updated:
+    description: >
+      Publish when a villa listing is created, updated, unpublished, or deleted;
+      FE uses to refresh home/search/list views.
+    subscribe:
+      operationId: villa_listing_event
+      summary: Villa listing created/updated/unpublished/deleted (realtime
+        discoverability)
+      message:
+        oneOf:
+          - name: villa_created
+            payload:
+              $ref: "#/components/schemas/Villa"
+          - name: villa_updated
+            payload:
+              $ref: "#/components/schemas/Villa"
+          - name: villa_unpublished
+            payload:
+              type: object
+              properties:
+                villa_id:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - unpublished
+          - name: villa_deleted
+            payload:
+              type: object
+              properties:
+                villa_id:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - deleted
+  villa/{villa_id}/photos:
+    description: |
+      Realtime stream for villa photo gallery changes
+    parameters:
+      villa_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: villa_photos_event
+      summary: Villa photo added, updated, deleted. FE should refresh photo gallery.
+      message:
+        oneOf:
+          - name: photo_added
+            payload:
+              $ref: "#/components/schemas/VillaPhoto"
+          - name: photo_updated
+            payload:
+              $ref: "#/components/schemas/VillaPhoto"
+          - name: photo_deleted
+            payload:
+              type: object
+              properties:
+                photo_id:
+                  type: string
+                villa_id:
+                  type: string
+  villa/{villa_id}/availability:
+    description: >
+      Realtime updates on availability calendar for a villa (host-side calendar,
+      booking blocks).
+    parameters:
+      villa_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: villa_calendar_update
+      summary: Availability/blocked dates for a villa updated (booking, host change,
+        etc).
+      message:
+        name: availability_updated
+        payload:
+          $ref: "#/components/schemas/VillaAvailability"
+  villa/{villa_id}/reviews:
+    description: |
+      Realtime review events for a specific villa; new review, edit, deleted.
+    parameters:
+      villa_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: villa_review_event
+      summary: New/edit/delete review for villa (for refreshing villa detail page
+        reviews section)
+      message:
+        oneOf:
+          - name: review_created
+            payload:
+              $ref: "#/components/schemas/Review"
+          - name: review_updated
+            payload:
+              $ref: "#/components/schemas/Review"
+          - name: review_deleted
+            payload:
+              type: object
+              properties:
+                review_id:
+                  type: string
+                villa_id:
+                  type: string
+                is_deleted:
+                  type: boolean
+  villa/{villa_id}/saved:
+    description: >
+      Realtime favorite/saved count for villa; triggers for villa card/list
+      state refresh
+    parameters:
+      villa_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: villa_saved_event
+      summary: Villa saved/favorited/unfavorited by guest
+      message:
+        oneOf:
+          - name: villa_saved
+            payload:
+              type: object
+              properties:
+                villa_id:
+                  type: string
+                user_id:
+                  type: string
+                saved_at:
+                  type: string
+                  format: date-time
+          - name: villa_unsaved
+            payload:
+              type: object
+              properties:
+                villa_id:
+                  type: string
+                user_id:
+                  type: string
+  user/{user_id}/saved_villas:
+    description: |
+      Realtime stream for changes to the user's own saved/favorited villas list
+    parameters:
+      user_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: saved_villas_list_update
+      summary: User saved/unsaved a villa—refresh dashboard/favorites sidebar etc.
+      message:
+        oneOf:
+          - name: favorite_added
+            payload:
+              $ref: "#/components/schemas/VillaSaved"
+          - name: favorite_removed
+            payload:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                villa_id:
+                  type: string
+  user/{user_id}/bookings:
+    description: >
+      Pushes for booking creation/payment/status/cancel on guest dashboard;
+      includes host-side for their own villa bookings.
+    parameters:
+      user_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: user_booking_event
+      summary: Booking lifecycle event (created, status change, canceled)
+      message:
+        oneOf:
+          - name: booking_created
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_status_updated
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_canceled
+            payload:
+              $ref: "#/components/schemas/Booking"
+  host/{host_user_id}/bookings:
+    description: >
+      Push for host regarding bookings on their villas (new requests, updated,
+      canceled, guest cancel/host approve etc)
+    parameters:
+      host_user_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: host_booking_event
+      summary: Host as receiver of booking changes on their property
+      message:
+        oneOf:
+          - name: booking_request_received
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_status_changed
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_canceled_by_guest
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_canceled_by_host
+            payload:
+              $ref: "#/components/schemas/Booking"
+  villa/{villa_id}/bookings:
+    description: >
+      Push to villa calendar/listing context when a booking changes for that
+      villa (host and admin, or for guest's "my bookings")
+    parameters:
+      villa_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: villa_booking_event
+      summary: For updating booking overlays in search/list detail and calendar
+      message:
+        oneOf:
+          - name: new_booking
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_status_changed
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_canceled
+            payload:
+              $ref: "#/components/schemas/Booking"
+  booking/{booking_id}/state:
+    description: |
+      Realtime channel for a specific booking (guest/host both joined).
+    parameters:
+      booking_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: booking_state_event
+      summary: Booking's status/changes for both parties (dashboard, booking detail,
+        etc)
+      message:
+        oneOf:
+          - name: booking_updated
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_cancelled
+            payload:
+              $ref: "#/components/schemas/Booking"
+  user/{user_id}/threads:
+    description: >
+      List of threads for messaging sidebar/inbox (new message, new thread,
+      thread updated)
+    parameters:
+      user_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: user_threads_event
+      summary: User's thread list is updated (new thread, thread updated)
+      message:
+        oneOf:
+          - name: thread_created
+            payload:
+              $ref: "#/components/schemas/MessageThread"
+          - name: thread_updated
+            payload:
+              $ref: "#/components/schemas/MessageThread"
+          - name: thread_archived
+            payload:
+              type: object
+              properties:
+                thread_id:
+                  type: string
+                participant_user_ids:
+                  type: string
+  thread/{thread_id}/messages:
+    description: >
+      Channel for a specific thread (all participants join), new message sent;
+      read receipts.
+    parameters:
+      thread_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: thread_messages_event
+      summary: Send/receive message in a thread (inbox, context chat window)
+      message:
+        oneOf:
+          - name: message_sent
+            payload:
+              $ref: "#/components/schemas/Message"
+          - name: message_read
+            payload:
+              type: object
+              properties:
+                message_id:
+                  type: string
+                reader_user_id:
+                  type: string
+                thread_id:
+                  type: string
+  admin/global/listings:
+    description: |
+      Admin receives listing flagged/updated/removed (for moderation dashboard)
+    subscribe:
+      operationId: admin_listing_moderation_event
+      summary: Villa listing flagged/updated/removed
+      message:
+        oneOf:
+          - name: listing_flagged
+            payload:
+              $ref: "#/components/schemas/Villa"
+          - name: listing_removed
+            payload:
+              type: object
+              properties:
+                villa_id:
+                  type: string
+                status:
+                  type: string
+  admin/global/bookings:
+    description: |
+      Realtime admin stream on all bookings: created, canceled, dispute, etc
+    subscribe:
+      operationId: admin_booking_event
+      summary: Booking activity for admin
+      message:
+        oneOf:
+          - name: booking_created
+            payload:
+              $ref: "#/components/schemas/Booking"
+          - name: booking_cancelled
+            payload:
+              $ref: "#/components/schemas/Booking"
+  admin/global/reviews:
+    description: |
+      Realtime review events for admin moderation (flagged, created, deleted)
+    subscribe:
+      operationId: admin_review_event
+      summary: Review flagged/created/deleted for moderation
+      message:
+        oneOf:
+          - name: review_flagged
+            payload:
+              $ref: "#/components/schemas/Review"
+          - name: review_deleted_by_admin
+            payload:
+              type: object
+              properties:
+                review_id:
+                  type: string
+                is_deleted:
+                  type: boolean
+  admin/global/users:
+    description: |
+      Realtime events for admin user ban/suspend/un-suspend, new user, etc.
+    subscribe:
+      operationId: admin_user_event
+      summary: User events for admin moderation
+      message:
+        oneOf:
+          - name: user_suspended
+            payload:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                status:
+                  type: string
+          - name: user_restored
+            payload:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                status:
+                  type: string
+  admin/global/emaillogs:
+    description: >
+      Admin dashboard gets notified of all outgoing transactional email log
+      entries in realtime
+    subscribe:
+      operationId: admin_emaillog_event
+      summary: New transactional email log
+      message:
+        name: admin_email_logged
+        payload:
+          $ref: "#/components/schemas/AdminEmailLog"
+  host/{host_user_id}/payouts:
+    description: >
+      Realtime updates for host's payouts: upcoming, confirmed, failed, method
+      updated.
+    parameters:
+      host_user_id:
+        schema:
+          type: string
+    subscribe:
+      operationId: host_payout_event
+      summary: Host payout created/updated/failed
+      message:
+        oneOf:
+          - name: payout_created
+            payload:
+              $ref: "#/components/schemas/Payout"
+          - name: payout_status_updated
+            payload:
+              $ref: "#/components/schemas/Payout"
+          - name: payout_method_updated
+            payload:
+              $ref: "#/components/schemas/PayoutMethod"
+components:
+  schemas:
+    UserStateGlobal:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        profile_photo_url:
+          type: string
+          nullable: true
+        is_authenticated:
+          type: boolean
+        is_email_confirmed:
+          type: boolean
+        contact_info:
+          type: object
+          properties:
+            phone:
+              type: string
+              nullable: true
+        host_bio:
+          type: string
+          nullable: true
+        has_unread_messages:
+          type: boolean
+        has_unread_notifications:
+          type: boolean
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        password_hash:
+          type: string
+        role:
+          type: string
+        profile_photo_url:
+          type: string
+          nullable: true
+        contact_info:
+          type: string
+          nullable: true
+        host_bio:
+          type: string
+          nullable: true
+        is_email_confirmed:
+          type: boolean
+        email_confirmation_token:
+          type: string
+          nullable: true
+        password_reset_token:
+          type: string
+          nullable: true
+        has_unread_messages:
+          type: boolean
+        has_unread_notifications:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Villa:
+      type: object
+      properties:
+        villa_id:
+          type: string
+        host_user_id:
+          type: string
+        name:
+          type: string
+        subtitle:
+          type: string
+          nullable: true
+        location:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        address:
+          type: string
+          nullable: true
+        description:
+          type: string
+        house_rules:
+          type: string
+          nullable: true
+        special_notes:
+          type: string
+          nullable: true
+        amenities:
+          type: string
+        price_per_night:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        minimum_stay_nights:
+          type: integer
+        cancellation_policy:
+          type: string
+        status:
+          type: string
+        occupancy:
+          type: integer
+        average_rating:
+          type: number
+        review_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    VillaPhoto:
+      type: object
+      properties:
+        photo_id:
+          type: string
+        villa_id:
+          type: string
+        url:
+          type: string
+        sort_order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    VillaAvailability:
+      type: object
+      properties:
+        availability_id:
+          type: string
+        villa_id:
+          type: string
+        date:
+          type: string
+        is_available:
+          type: boolean
+        is_blocked:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    VillaSaved:
+      type: object
+      properties:
+        user_id:
+          type: string
+        villa_id:
+          type: string
+        saved_at:
+          type: string
+          format: date-time
+    Booking:
+      type: object
+      properties:
+        booking_id:
+          type: string
+        villa_id:
+          type: string
+        guest_user_id:
+          type: string
+        host_user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        adults:
+          type: integer
+        children:
+          type: integer
+        infants:
+          type: integer
+        total_price:
+          type: number
+        cleaning_fee:
+          type: number
+        service_fee:
+          type: number
+        status:
+          type: string
+        cancellation_reason:
+          type: string
+          nullable: true
+        payment_status:
+          type: string
+        is_guest_id_provided:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Review:
+      type: object
+      properties:
+        review_id:
+          type: string
+        booking_id:
+          type: string
+        villa_id:
+          type: string
+        reviewer_user_id:
+          type: string
+        reviewee_user_id:
+          type: string
+        reviewer_role:
+          type: string
+        rating:
+          type: number
+        text:
+          type: string
+          nullable: true
+        is_deleted:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        can_edit_until:
+          type: string
+          nullable: true
+    MessageThread:
+      type: object
+      properties:
+        thread_id:
+          type: string
+        villa_id:
+          type: string
+          nullable: true
+        booking_id:
+          type: string
+          nullable: true
+        participant_user_ids:
+          type: string
+        last_message_at:
+          type: string
+          nullable: true
+        unread_counts:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Message:
+      type: object
+      properties:
+        message_id:
+          type: string
+        thread_id:
+          type: string
+        sender_user_id:
+          type: string
+        content:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        is_read:
+          type: boolean
+    Notification:
+      type: object
+      properties:
+        notification_id:
+          type: string
+        user_id:
+          type: string
+        type:
+          type: string
+        content:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    Payout:
+      type: object
+      properties:
+        payout_id:
+          type: string
+        host_user_id:
+          type: string
+        booking_id:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        status:
+          type: string
+        payout_method:
+          type: string
+        details:
+          type: string
+          nullable: true
+        payout_date:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    PayoutMethod:
+      type: object
+      properties:
+        payout_method_id:
+          type: string
+        host_user_id:
+          type: string
+        method:
+          type: string
+        details:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AdminEmailLog:
+      type: object
+      properties:
+        log_id:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        to_email:
+          type: string
+        type:
+          type: string
+        subject:
+          type: string
+        content:
+          type: string
+        sent_at:
+          type: string
+          format: date-time

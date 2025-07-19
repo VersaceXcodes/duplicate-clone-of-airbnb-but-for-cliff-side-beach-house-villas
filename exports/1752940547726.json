@@ -1,0 +1,15 @@
+{
+  "timestamp": 1752940547726,
+  "operation": {
+    "id": "backend:specifications:openapi"
+  },
+  "projectId": "duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas",
+  "files": [
+    {
+      "path": "../../apps/duplicate-clone-of-airbnb-but-for-cliff-side-beach-house-villas/backend/openapi.yaml",
+      "type": "text",
+      "size": 73312,
+      "dependencies": false
+    }
+  ]
+}
